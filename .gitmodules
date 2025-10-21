@@ -1,0 +1,3 @@
+[submodule "Revel-Lib"]
+	path = Revel-Lib
+	url = https://github.com/Duskitten/Revel-Lib.git
