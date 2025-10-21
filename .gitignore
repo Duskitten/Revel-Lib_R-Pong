@@ -1,0 +1,5 @@
+build/PARAM.SFO
+build/main.prx
+build/EBOOT.PBP
+main.elf
+main.o
