@@ -116,10 +116,23 @@ int main() {
     sceGumLoadIdentity();
     pspDebugScreenSetXY(0, 0);
 
+    //Setup Controllers
     SceCtrlData pad;
     sceCtrlSetSamplingCycle(0);
     sceCtrlSetSamplingMode(PSP_CTRL_MODE_ANALOG);
 
+    //Setup Images
+    Texture* PaddleSprite = load_texture("Assets/Sprites/RPong-Paddles.png", GU_TRUE); 
+    if(PaddleSprite == NULL){
+        goto cleanup;
+    }
+
+    //Setup Sprites
+    int walloffset = 64;
+    int paddlespeed = 4;
+    ScePspFVector2 offsets = {12,48};
+    Sprite2D* PaddleA = create_sprite2d(PaddleSprite, 0xFFFFFFFF, (ScePspFVector2){offsets.x * 0,0}, (ScePspFVector2){offsets.x * 1,offsets.y}, (ScePspFVector2){12,48});
+    Sprite2D* PaddleB = create_sprite2d(PaddleSprite, 0xFFFFFFFF, (ScePspFVector2){offsets.x * 1,0}, (ScePspFVector2){offsets.x * 2,offsets.y}, (ScePspFVector2){12,48});
     while(running){
         startFrame();
         sceCtrlReadBufferPositive(&pad, 1);
@@ -132,19 +145,48 @@ int main() {
         sceGuClearDepth(0);
         sceGuClear(GU_COLOR_BUFFER_BIT | GU_STENCIL_BUFFER_BIT | GU_DEPTH_BUFFER_BIT);
         
+        //** Put Everything Here **//
+        PaddleA->core->position.x = walloffset;
+        draw_sprite2d(PaddleA);
+        PaddleB->core->position.x = (PSP_SCR_WIDTH - 12) - walloffset;
+        draw_sprite2d(PaddleB);
+
+        //** End Everything Here **//
+
+        //Controller Processing
         if (pad.Buttons != 0)
         {
             if (pad.Buttons & PSP_CTRL_SQUARE){
             }
             if (pad.Buttons & PSP_CTRL_TRIANGLE){
+                if (PaddleB->core->position.y - paddlespeed > 0){
+                    PaddleB->core->position.y -= paddlespeed;
+                } else{
+                    PaddleB->core->position.y = 0;
+                }
             }
             if (pad.Buttons & PSP_CTRL_CIRCLE){
             }
             if (pad.Buttons & PSP_CTRL_CROSS){
+                if ((PaddleB->core->position.y + offsets.y) + paddlespeed < PSP_SCR_HEIGHT){
+                    PaddleB->core->position.y += paddlespeed;
+                } else{
+                    PaddleB->core->position.y = PSP_SCR_HEIGHT - offsets.y;
+                }
             }
             if (pad.Buttons & PSP_CTRL_UP){
+                if (PaddleA->core->position.y - paddlespeed > 0){
+                    PaddleA->core->position.y -= paddlespeed;
+                } else{
+                    PaddleA->core->position.y = 0;
+                }
             }
             if (pad.Buttons & PSP_CTRL_DOWN){
+                if ((PaddleA->core->position.y + offsets.y) + paddlespeed < PSP_SCR_HEIGHT){
+                    PaddleA->core->position.y += paddlespeed;
+                } else{
+                    PaddleA->core->position.y = PSP_SCR_HEIGHT - offsets.y;
+                }
             }
             if (pad.Buttons & PSP_CTRL_LEFT){
             }
