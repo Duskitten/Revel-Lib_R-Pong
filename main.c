@@ -122,28 +122,46 @@ int main() {
     sceCtrlSetSamplingMode(PSP_CTRL_MODE_ANALOG);
 
     //Setup Images
-    Texture* PaddleTexture = load_texture("Assets/Sprites/RPong-Paddles.png", GU_FALSE); 
+    Texture* PaddleTexture = load_texture("Assets/Sprites/RPong-Paddles.png", GU_TRUE); 
     if(PaddleTexture == NULL){
         goto cleanup;
     }
-    Texture* NetTexture = load_texture("Assets/Sprites/RPong-Net.png", GU_FALSE); 
+    Texture* NetTexture = load_texture("Assets/Sprites/RPong-Net.png", GU_TRUE); 
+    if(NetTexture == NULL){
+        goto cleanup;
+    }
+    Texture* BallTexture = load_texture("Assets/Sprites/RPong-Ball.png", GU_TRUE); 
     if(NetTexture == NULL){
         goto cleanup;
     }
 
     //Setup Sprites
     int walloffset = 64;
-    int paddlespeed = 4;
-    ScePspFVector2 paddleoffsets = {12,48};
-    Sprite2D* PaddleA = create_sprite2d(PaddleTexture, 0xFFFFFFFF, (ScePspFVector2){0,0}, (ScePspFVector2){paddleoffsets.x,paddleoffsets.y}, paddleoffsets);
-    Sprite2D* PaddleB = create_sprite2d(PaddleTexture, 0xFFFFFFFF, (ScePspFVector2){paddleoffsets.x,0}, (ScePspFVector2){paddleoffsets.x * 2,paddleoffsets.y}, paddleoffsets);
-    
-    ScePspFVector2 netoffsets = {2,16};
-    Sprite2D* NetA = create_sprite2d(NetTexture, 0xFFFFFFFF, (ScePspFVector2){0,0}, (ScePspFVector2){netoffsets.x,PSP_SCR_HEIGHT}, (ScePspFVector2){2,PSP_SCR_HEIGHT});
-    Sprite2D* NetB = create_sprite2d(NetTexture, 0xFFFFFFFF, (ScePspFVector2){netoffsets.x,0}, (ScePspFVector2){netoffsets.x*2,PSP_SCR_HEIGHT}, (ScePspFVector2){2,PSP_SCR_HEIGHT});
-    
+    unsigned int Color_Mods[2] = {0xFFb5aa2d,0xFF613df2};
 
+    ScePspFVector2 paddleoffsets = {12,48};
+    Sprite2D* PaddleA = create_sprite2d(PaddleTexture, Color_Mods[0], (ScePspFVector2){0,0}, (ScePspFVector2){paddleoffsets.x,paddleoffsets.y}, paddleoffsets);
+    Sprite2D* PaddleB = create_sprite2d(PaddleTexture, Color_Mods[1], (ScePspFVector2){0,0}, (ScePspFVector2){paddleoffsets.x,paddleoffsets.y}, paddleoffsets);
+    PaddleA->core->position.y = (PSP_SCR_HEIGHT/ 2) - (paddleoffsets.y / 2);
+    PaddleB->core->position.y = (PSP_SCR_HEIGHT/ 2) - (paddleoffsets.y / 2);
+
+    ScePspFVector2 netoffsets = {2,16};
+    Sprite2D* NetA = create_sprite2d(NetTexture, Color_Mods[0], (ScePspFVector2){0,0}, (ScePspFVector2){netoffsets.x,PSP_SCR_HEIGHT}, (ScePspFVector2){2,PSP_SCR_HEIGHT});
+    Sprite2D* NetB = create_sprite2d(NetTexture, Color_Mods[1], (ScePspFVector2){0,0}, (ScePspFVector2){netoffsets.x,PSP_SCR_HEIGHT}, (ScePspFVector2){2,PSP_SCR_HEIGHT});
+    
+    Sprite2D* Ball = create_sprite2d(BallTexture, 0xFFFFFFFF, (ScePspFVector2){0,0}, (ScePspFVector2){8,8}, (ScePspFVector2){8,8});
+    Ball->core->position.x = (PSP_SCR_WIDTH / 2) - 4;
+    Ball->core->position.y = (PSP_SCR_HEIGHT/ 2) - 4;
+
+
+    ScePspFVector2 BallVelocity = {2.0f,1};
+    float PaddleAVelocity = 0;
+    float PaddleBVelocity = 0;
+    float PaddleSpeed = 0.1f;
     while(running){
+        pspDebugScreenSetXY(0, 0);
+        ScePspFVector2 paddleoffsetA = {0,0};
+        ScePspFVector2 paddleoffsetB = {0,0};
         startFrame();
         sceCtrlReadBufferPositive(&pad, 1);
         // Blending
@@ -161,10 +179,13 @@ int main() {
         PaddleB->core->position.x = (PSP_SCR_WIDTH - 12) - walloffset;
         draw_sprite2d(PaddleB);
 
-        NetA->core->position.x = (PSP_SCR_WIDTH / 2) - 2;
+        NetA->core->position.x = (PSP_SCR_WIDTH / 2) - 1 - 2;
         draw_sprite2d(NetA);
-        NetB->core->position.x = (PSP_SCR_WIDTH / 2) + 2;
+        NetB->core->position.x = (PSP_SCR_WIDTH / 2) - 1 + 2;
         draw_sprite2d(NetB);
+
+        
+        draw_sprite2d(Ball);
 
         //** End Everything Here **//
 
@@ -174,38 +195,66 @@ int main() {
             if (pad.Buttons & PSP_CTRL_SQUARE){
             }
             if (pad.Buttons & PSP_CTRL_TRIANGLE){
-                if (PaddleB->core->position.y - paddlespeed > 0){
-                    PaddleB->core->position.y -= paddlespeed;
-                } else{
-                    PaddleB->core->position.y = 0;
-                }
+                paddleoffsetB.x -= 1;
             }
             if (pad.Buttons & PSP_CTRL_CIRCLE){
             }
             if (pad.Buttons & PSP_CTRL_CROSS){
-                if ((PaddleB->core->position.y + paddleoffsets.y) + paddlespeed < PSP_SCR_HEIGHT){
-                    PaddleB->core->position.y += paddlespeed;
-                } else{
-                    PaddleB->core->position.y = PSP_SCR_HEIGHT - paddleoffsets.y;
-                }
+                paddleoffsetB.x += 1;
             }
             if (pad.Buttons & PSP_CTRL_UP){
-                if (PaddleA->core->position.y - paddlespeed > 0){
-                    PaddleA->core->position.y -= paddlespeed;
-                } else{
-                    PaddleA->core->position.y = 0;
-                }
+                paddleoffsetA.x -= 1;
             }
             if (pad.Buttons & PSP_CTRL_DOWN){
-                if ((PaddleA->core->position.y + paddleoffsets.y) + paddlespeed < PSP_SCR_HEIGHT){
-                    PaddleA->core->position.y += paddlespeed;
-                } else{
-                    PaddleA->core->position.y = PSP_SCR_HEIGHT - paddleoffsets.y;
-                }
+                paddleoffsetA.x += 1;
             }
             if (pad.Buttons & PSP_CTRL_LEFT){
             }
             if (pad.Buttons & PSP_CTRL_RIGHT){
+            }
+        }
+        PaddleAVelocity += paddleoffsetA.x * PaddleSpeed;
+        PaddleA->core->position.y += PaddleAVelocity;
+        if(paddleoffsetA.x == 0){
+            PaddleAVelocity =  lerp(PaddleAVelocity, 0.0f, 0.1);
+        } 
+        PaddleA->core->position.y = clamp_float(PaddleA->core->position.y, 0, PSP_SCR_HEIGHT-paddleoffsets.y);
+        if(PaddleA->core->position.y == 0 || PaddleA->core->position.y == PSP_SCR_HEIGHT-paddleoffsets.y){
+            PaddleAVelocity = 0;
+        }
+
+        PaddleBVelocity += paddleoffsetB.x * PaddleSpeed;
+        PaddleB->core->position.y += PaddleBVelocity;
+        if(paddleoffsetB.x == 0){
+            PaddleBVelocity =  lerp(PaddleBVelocity, 0.0f, 0.1);
+        } 
+        PaddleB->core->position.y = clamp_float(PaddleB->core->position.y, 0, PSP_SCR_HEIGHT-paddleoffsets.y);
+        if(PaddleB->core->position.y == 0 || PaddleB->core->position.y == PSP_SCR_HEIGHT-paddleoffsets.y){
+            PaddleBVelocity = 0;
+        }
+        Ball->core->position.x += BallVelocity.x;
+        Ball->core->position.x = clamp_float(Ball->core->position.x, 0, PSP_SCR_WIDTH-8);
+        if(Ball->core->position.x == 0 || Ball->core->position.x == PSP_SCR_WIDTH-8){
+            BallVelocity.x *= -1;
+            Ball->core->position.x = (PSP_SCR_WIDTH / 2) - 4;
+            Ball->core->position.y = (PSP_SCR_HEIGHT/ 2) - 4;
+        }
+
+        Ball->core->position.y += BallVelocity.y;
+        Ball->core->position.y = clamp_float(Ball->core->position.y, 0, PSP_SCR_HEIGHT-8);
+        if(Ball->core->position.y == 0 || Ball->core->position.y == PSP_SCR_HEIGHT-8){
+            BallVelocity.y *= -1;
+        }
+
+        //pspDebugScreenPrintf("%f, %f", Ball->core->position.y, PaddleA->core->position.y);
+        if(Ball->core->position.x >= (PSP_SCR_WIDTH - paddleoffsets.x) - walloffset - 8 && Ball->core->position.x <= (PSP_SCR_WIDTH) - walloffset - 8 && BallVelocity.x > 0) {
+            if(Ball->core->position.y >= PaddleB->core->position.y && Ball->core->position.y <= PaddleB->core->position.y + paddleoffsets.y){
+                BallVelocity.x *= -1;
+            }
+
+        } else if (Ball->core->position.x >= PaddleA->core->position.x && Ball->core->position.x <= PaddleA->core->position.x + paddleoffsets.x  && BallVelocity.x < 0){
+            if(Ball->core->position.y >= PaddleA->core->position.y && Ball->core->position.y <= PaddleA->core->position.y + paddleoffsets.y){
+                BallVelocity.x *= -1;
             }
         }
 
