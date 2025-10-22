@@ -216,7 +216,7 @@ int main() {
         PaddleAVelocity += paddleoffsetA.x * PaddleSpeed;
         PaddleA->core->position.y += PaddleAVelocity;
         if(paddleoffsetA.x == 0){
-            PaddleAVelocity =  lerp(PaddleAVelocity, 0.0f, 0.1);
+            PaddleAVelocity =  lerp_float(PaddleAVelocity, 0.0f, 0.1);
         } 
         PaddleA->core->position.y = clamp_float(PaddleA->core->position.y, 0, PSP_SCR_HEIGHT-paddleoffsets.y);
         if(PaddleA->core->position.y == 0 || PaddleA->core->position.y == PSP_SCR_HEIGHT-paddleoffsets.y){
@@ -226,7 +226,7 @@ int main() {
         PaddleBVelocity += paddleoffsetB.x * PaddleSpeed;
         PaddleB->core->position.y += PaddleBVelocity;
         if(paddleoffsetB.x == 0){
-            PaddleBVelocity =  lerp(PaddleBVelocity, 0.0f, 0.1);
+            PaddleBVelocity =  lerp_float(PaddleBVelocity, 0.0f, 0.1);
         } 
         PaddleB->core->position.y = clamp_float(PaddleB->core->position.y, 0, PSP_SCR_HEIGHT-paddleoffsets.y);
         if(PaddleB->core->position.y == 0 || PaddleB->core->position.y == PSP_SCR_HEIGHT-paddleoffsets.y){
