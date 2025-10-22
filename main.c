@@ -154,7 +154,7 @@ int main() {
     Ball->core->position.y = (PSP_SCR_HEIGHT/ 2) - 4;
 
 
-    ScePspFVector2 BallVelocity = {2.0f,1};
+    ScePspFVector2 BallVelocity = {2.0f,0};
     float PaddleAVelocity = 0;
     float PaddleBVelocity = 0;
     float PaddleSpeed = 0.1f;
