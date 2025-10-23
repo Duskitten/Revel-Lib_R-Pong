@@ -223,8 +223,13 @@ int main() {
 
         draw_patch2d(Panel);
 
-        draw_font2d(ScoreFont,  total , (ScePspFVector2){PSP_SCR_WIDTH/2 - ((ScoreFont->character_size.x*8)/2) - 1,8});
-
+        
+        if(match_Started){
+            //Put the beginning stuff here!
+            draw_font2d(ScoreFont,  total , (ScePspFVector2){PSP_SCR_WIDTH/2 - ((ScoreFont->character_size.x*8)/2) - 1,8});
+            
+        }
+            //draw_font2d(ScoreFont, "Press Start!" , (ScePspFVector2){PSP_SCR_WIDTH/2 - ((ScoreFont->character_size.x*13)/2) - 1,64});
         //** End Draw Everything Here **//
 
         //Controller Processing
@@ -299,6 +304,7 @@ int main() {
                 strcat(t12," || ");
                 strcat(t12, T1);
                 total = t12;
+                
             } else if (Ball->core->position.x == PSP_SCR_WIDTH-8){
                 Team2Points += 1;
                 Team2Points = clamp_int(Team2Points, 0, Max_Points);
@@ -313,6 +319,7 @@ int main() {
                 strcat(t12, T1);
                 total = t12;
             }
+            BallVelocity.y = 0;
             BallVelocity.x *= -1;
             Ball->core->position.x = (PSP_SCR_WIDTH / 2) - 4;
             Ball->core->position.y = (PSP_SCR_HEIGHT/ 2) - 4;
@@ -324,9 +331,18 @@ int main() {
             BallVelocity.y *= -1;
         }
 
-        //pspDebugScreenPrintf("%f, %f", Ball->core->position.y, PaddleA->core->position.y);
         if((point_in_rect(Ball->core->position, (ScePspFVector2){4,4}, PaddleA->core->position, PaddleA->size) && BallVelocity.x < 0) || (point_in_rect(Ball->core->position,(ScePspFVector2){4,4}, PaddleB->core->position, PaddleB->size) && BallVelocity.x > 0 )){
-            BallVelocity.x *= -1;
+            if((point_in_rect(Ball->core->position, (ScePspFVector2){4,4}, PaddleA->core->position, PaddleA->size) && BallVelocity.x < 0)){
+                BallVelocity.y += PaddleAVelocity/2;
+            }
+            if((point_in_rect(Ball->core->position,(ScePspFVector2){4,4}, PaddleB->core->position, PaddleB->size) && BallVelocity.x > 0 )){
+                BallVelocity.y += PaddleBVelocity/2;
+            }
+            float newvelocity = fabs(BallVelocity.x) + 0.1;
+            if(BallVelocity.x < 0){
+                newvelocity *= -1;
+            }
+            BallVelocity.x = newvelocity * -1;
         }
         
 
