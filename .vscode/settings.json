@@ -7,6 +7,7 @@
         "float_math.h": "c",
         "revel-define.h": "c",
         "box3d.h": "c",
-        "patch2d.h": "c"
+        "patch2d.h": "c",
+        "int_math.h": "c"
     }
 }
