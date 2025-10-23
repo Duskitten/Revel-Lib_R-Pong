@@ -134,6 +134,11 @@ int main() {
     if(NetTexture == NULL){
         goto cleanup;
     }
+    Texture* PanelTexture = load_texture("Assets/Sprites/RPong-Panel.png", GU_TRUE); 
+    if(NetTexture == NULL){
+        goto cleanup;
+    }
+
 
     //Setup Sprites
     int walloffset = 64;
@@ -153,11 +158,18 @@ int main() {
     Ball->core->position.x = (PSP_SCR_WIDTH / 2) - 4;
     Ball->core->position.y = (PSP_SCR_HEIGHT/ 2) - 4;
 
+    Patch2D* Panel = create_patch2d(PanelTexture, 0xFFFFFFFF,(ScePspFVector2){0,0},(ScePspFVector2){32,32}, (ScePspFVector2){32,32}, (ScePspFVector2){8,8},(ScePspFVector2){8,8});
 
     ScePspFVector2 BallVelocity = {2.0f,0};
     float PaddleAVelocity = 0;
     float PaddleBVelocity = 0;
     float PaddleSpeed = 0.1f;
+
+    int Team1Points = 0;
+    int Team2Points = 0;
+    //Add padding %02d to text drawing
+    float sizeval = 0.0f;
+    float sizeval2 = 0.0f;
     while(running){
         pspDebugScreenSetXY(0, 0);
         ScePspFVector2 paddleoffsetA = {0,0};
@@ -186,6 +198,7 @@ int main() {
 
         
         draw_sprite2d(Ball);
+        draw_patch2d(Panel);
 
         //** End Everything Here **//
 
@@ -235,6 +248,11 @@ int main() {
         Ball->core->position.x += BallVelocity.x;
         Ball->core->position.x = clamp_float(Ball->core->position.x, 0, PSP_SCR_WIDTH-8);
         if(Ball->core->position.x == 0 || Ball->core->position.x == PSP_SCR_WIDTH-8){
+            if(Ball->core->position.x == 0){
+                Team2Points += 1;
+            } else if (Ball->core->position.x == PSP_SCR_WIDTH-8){
+                Team1Points += 1;
+            }
             BallVelocity.x *= -1;
             Ball->core->position.x = (PSP_SCR_WIDTH / 2) - 4;
             Ball->core->position.y = (PSP_SCR_HEIGHT/ 2) - 4;
@@ -247,15 +265,8 @@ int main() {
         }
 
         //pspDebugScreenPrintf("%f, %f", Ball->core->position.y, PaddleA->core->position.y);
-        if(Ball->core->position.x >= (PSP_SCR_WIDTH - paddleoffsets.x) - walloffset - 8 && Ball->core->position.x <= (PSP_SCR_WIDTH) - walloffset - 8 && BallVelocity.x > 0) {
-            if(Ball->core->position.y >= PaddleB->core->position.y && Ball->core->position.y <= PaddleB->core->position.y + paddleoffsets.y){
-                BallVelocity.x *= -1;
-            }
-
-        } else if (Ball->core->position.x >= PaddleA->core->position.x && Ball->core->position.x <= PaddleA->core->position.x + paddleoffsets.x  && BallVelocity.x < 0){
-            if(Ball->core->position.y >= PaddleA->core->position.y && Ball->core->position.y <= PaddleA->core->position.y + paddleoffsets.y){
-                BallVelocity.x *= -1;
-            }
+        if((point_in_rect(Ball->core->position, (ScePspFVector2){4,4}, PaddleA->core->position, PaddleA->size) && BallVelocity.x < 0) || (point_in_rect(Ball->core->position,(ScePspFVector2){4,4}, PaddleB->core->position, PaddleB->size) && BallVelocity.x > 0 )){
+            BallVelocity.x *= -1;
         }
 
         endFrame();

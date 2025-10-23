@@ -2,6 +2,11 @@
     "files.associations": {
         "string.h": "c",
         "texture.h": "c",
-        "coreobject.h": "c"
+        "coreobject.h": "c",
+        "regex": "c",
+        "float_math.h": "c",
+        "revel-define.h": "c",
+        "box3d.h": "c",
+        "patch2d.h": "c"
     }
 }
