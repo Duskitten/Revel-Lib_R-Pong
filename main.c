@@ -164,7 +164,10 @@ int main() {
     Ball->core->position.x = (PSP_SCR_WIDTH / 2) - 4;
     Ball->core->position.y = (PSP_SCR_HEIGHT/ 2) - 4  + heightoffset/2;
 
+    Sprite2D* RPongSign = create_sprite2d(ScoreFontTexture, 0xFFFFFFFF, (ScePspFVector2){0,16}, (ScePspFVector2){109,44}, (ScePspFVector2){110,29});
+
     Patch2D* Panel = create_patch2d(PanelTexture, 0xFFFFFFFF,(ScePspFVector2){0,0},(ScePspFVector2){32,32}, (ScePspFVector2){PSP_SCR_WIDTH,32}, (ScePspFVector2){8,8},(ScePspFVector2){8,8});
+    Patch2D* Panel2 = create_patch2d(PanelTexture, 0xFFFFFFFF,(ScePspFVector2){0,0},(ScePspFVector2){32,32}, (ScePspFVector2){PSP_SCR_WIDTH,32}, (ScePspFVector2){8,8},(ScePspFVector2){8,8});
 
     Font2D* ScoreFont = create_font2d(ScoreFontTexture, 0xFFFFFFFF, (ScePspIVector2){16,16}, (ScePspFVector2){8,16},(ScePspFVector2){0,0}, "0123456789| ");
 
@@ -178,13 +181,8 @@ int main() {
     int Team2Points = 0;
     char T2[20] = "00";
     int Max_Points = 99;
-    char* total = "";
-    char tA[30] = "";
-    strcat(tA, "00");
-    strcat(tA," || ");
-    strcat(tA, "00");
-    total = tA;
-    //Add padding %02d to text drawing
+    char* total = "00 || 00";
+
     ScePspFVector2 paddleoffsetA = {0,0};
     ScePspFVector2 paddleoffsetB = {0,0};
 
@@ -221,13 +219,23 @@ int main() {
         PaddleB->core->position.x = (PSP_SCR_WIDTH - 12) - walloffset;
         draw_sprite2d(PaddleB);
 
-        draw_patch2d(Panel);
+        
 
         
         if(match_Started){
             //Put the beginning stuff here!
+            draw_patch2d(Panel);
             draw_font2d(ScoreFont,  total , (ScePspFVector2){PSP_SCR_WIDTH/2 - ((ScoreFont->character_size.x*8)/2) - 1,8});
             
+        } else {
+            Panel2->core->position.x = (PSP_SCR_WIDTH/4) + 32;
+            Panel2->core->position.y = 64;
+            Panel2-> size.x = (PSP_SCR_WIDTH/2) - 64;
+            Panel2-> size.y = (PSP_SCR_HEIGHT-64) - 64;
+            draw_patch2d(Panel2);
+            RPongSign->core->position.x = (PSP_SCR_WIDTH/2) - (RPongSign->size.x/2);
+            RPongSign->core->position.y = 78;
+            draw_sprite2d(RPongSign);
         }
             //draw_font2d(ScoreFont, "Press Start!" , (ScePspFVector2){PSP_SCR_WIDTH/2 - ((ScoreFont->character_size.x*13)/2) - 1,64});
         //** End Draw Everything Here **//
@@ -255,17 +263,25 @@ int main() {
             }
             if (pad.Buttons & PSP_CTRL_RIGHT){
             }
+            if (pad.Buttons & PSP_CTRL_SELECT){
+                match_Started = 0;
+                BallVelocity.x = 0;
+                BallVelocity.y = 0;
+                Team1Points = 0;
+                Team2Points = 0;
+                total = "00 || 00";
+                Ball->core->position.x = (PSP_SCR_WIDTH / 2) - 4;
+                Ball->core->position.y = (PSP_SCR_HEIGHT/ 2) - 4  + heightoffset/2;
+                PaddleA->core->position.y = (PSP_SCR_HEIGHT/ 2) - (paddleoffsets.y / 2) + heightoffset/2;
+                PaddleB->core->position.y = (PSP_SCR_HEIGHT/ 2) - (paddleoffsets.y / 2) + heightoffset/2;
+            }
+
             if (pad.Buttons & PSP_CTRL_START){
                 if(!match_Started){
                     match_Started = 1;
-                    float randX = (rand() % 10) - 5.0f;
-                    if(randX < 1.0f && randX > 0.0f){
-                        randX = 1.1f;
-                    }
-                    else if(randX > -1.0f && randX < 0.0f){
-                        randX = -1.1f;
-                    }
-                    BallVelocity = (ScePspFVector2){randX,0};
+                    BallVelocity = (ScePspFVector2){-2.0f,0};
+                    PaddleA->core->position.y = (PSP_SCR_HEIGHT/ 2) - (paddleoffsets.y / 2) + heightoffset/2;
+                    PaddleB->core->position.y = (PSP_SCR_HEIGHT/ 2) - (paddleoffsets.y / 2) + heightoffset/2;
                 }
             }
         }
@@ -323,6 +339,8 @@ int main() {
             BallVelocity.x *= -1;
             Ball->core->position.x = (PSP_SCR_WIDTH / 2) - 4;
             Ball->core->position.y = (PSP_SCR_HEIGHT/ 2) - 4;
+            PaddleA->core->position.y = (PSP_SCR_HEIGHT/ 2) - (paddleoffsets.y / 2) + heightoffset/2;
+            PaddleB->core->position.y = (PSP_SCR_HEIGHT/ 2) - (paddleoffsets.y / 2) + heightoffset/2;
         }
 
         Ball->core->position.y += BallVelocity.y;
